@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 from regex import Regex, UNICODE, IGNORECASE
-from fileprocess import process_lines
 import sys
 import logging
 import getopt
