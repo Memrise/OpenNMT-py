@@ -14,6 +14,7 @@ import onmt.opts
 
 from onmt.utils.logging import init_logger
 from onmt.translate.translator import build_translator
+from onmt.translate.detokenizer import Detokenizer
 
 
 class Timer:
@@ -276,6 +277,14 @@ class ServerModel:
                 tokenizer = pyonmttok.Tokenizer(mode,
                                                 **tokenizer_params)
                 self.tokenizer = tokenizer
+            elif self.tokenizer_opt['type'] == 'spacy':
+                if "model" not in self.tokenizer_opt:
+                    raise ValueError(
+                        "Missing mandatory tokenizer option 'model'")
+                model = self.tokenizer_top["model"]
+                import spacy
+                self.tokenizer = spacy.load(model)
+                self.detokenizer = Detokenizer({'capitalize_sents': True, 'language': model})
             else:
                 raise ValueError("Invalid value for tokenizer type")
 
@@ -466,6 +475,8 @@ class ServerModel:
         elif self.tokenizer_opt["type"] == "pyonmttok":
             tok, _ = self.tokenizer.tokenize(sequence)
             tok = " ".join(tok)
+        elif self.tokenizer_opt["type"] == "spacy":
+            tok = " ".join(str(s) for s in self.tokenizer(sequence))
         return tok
 
     def maybe_detokenize(self, sequence):
@@ -489,5 +500,6 @@ class ServerModel:
             detok = self.tokenizer.DecodePieces(sequence.split())
         elif self.tokenizer_opt["type"] == "pyonmttok":
             detok = self.tokenizer.detokenize(sequence.split())
-
+        elif self.tokenizer_opt["type"] == "spacy":
+            detok = self.detokenizer.detokenize(sequence)
         return detok
