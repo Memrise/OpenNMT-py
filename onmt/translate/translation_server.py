@@ -281,7 +281,7 @@ class ServerModel:
                 if "model" not in self.tokenizer_opt:
                     raise ValueError(
                         "Missing mandatory tokenizer option 'model'")
-                model = self.tokenizer_top["model"]
+                model = self.tokenizer_opt["model"]
                 import spacy
                 self.tokenizer = spacy.load(model)
                 self.detokenizer = Detokenizer({'capitalize_sents': True, 'language': model})
@@ -476,7 +476,7 @@ class ServerModel:
             tok, _ = self.tokenizer.tokenize(sequence)
             tok = " ".join(tok)
         elif self.tokenizer_opt["type"] == "spacy":
-            tok = " ".join(str(s) for s in self.tokenizer(sequence))
+            tok = " ".join(str(s).lower() for s in self.tokenizer(sequence))
         return tok
 
     def maybe_detokenize(self, sequence):
